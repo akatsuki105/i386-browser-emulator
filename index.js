@@ -71,17 +71,18 @@ function readBinary(emu, memory) {
 function mainFunc() {
     let emu = new Emulator(0x7c00, 0x7c00);
     readBinary(emu, memory);
-    while(emu.eip < 0x7cff) {
+    while(emu.eip < MEMOEY_SIZE) {
         let code = get_code8(emu, 0);
         
         if (instructions[code] == null) {
+            console.log("emu: ", emu);
             console.log(`Not Implemented: ${code}`);
             break;
         }
 
         instructions[code](emu);
 
-        if (emu.eip == 0) {
+        if (emu.eip == null) {
             console.log("end of program.");
             break;
         }
