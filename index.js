@@ -28,7 +28,7 @@ class Emulator {
     constructor(eip, esp) {
         this.registers = [0, 0, 0, 0, 0, 0, 0, 0];
         this.eflags = 0;
-        this.memory = (new Array(MEMOEY_SIZE)).fill(0);
+        this.memory = (new Array(MEMOEY_SIZE)).fill(null);
         this.eip = eip;
         this.registers[Register.ESP] = esp;
     }
@@ -65,8 +65,16 @@ function readBinary(emu, memory) {
     }
 }
 
+function get_code8(emu, index) {
+    return emu.memory[emu.eip + index];
+}
+
 function mainFunc() {
     emu = new Emulator(0x7c00, 0x7c00);
     readBinary(emu, memory);
-    console.log(emu);
+    while(emu.eip < 0x7cff) {
+        let code = get_code8(emu, 0);
+        emu.eip++;
+        console.log(code);
+    }
 }
