@@ -1,3 +1,5 @@
+import { get_code8 } from "./emulator_function.js";
+
 const MEMOEY_SIZE = 1024 * 1024;
 
 let memory = [];
@@ -65,12 +67,8 @@ function readBinary(emu, memory) {
     }
 }
 
-function get_code8(emu, index) {
-    return emu.memory[emu.eip + index];
-}
-
 function mainFunc() {
-    emu = new Emulator(0x7c00, 0x7c00);
+    let emu = new Emulator(0x7c00, 0x7c00);
     readBinary(emu, memory);
     while(emu.eip < 0x7cff) {
         let code = get_code8(emu, 0);
@@ -78,3 +76,8 @@ function mainFunc() {
         console.log(code);
     }
 }
+
+let inputfile = document.getElementById("inputfile");
+inputfile.addEventListener("change", event => {
+    return onAddFile(event);
+}, false);
