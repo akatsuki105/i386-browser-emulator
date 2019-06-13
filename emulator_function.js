@@ -1,3 +1,23 @@
+const Register = {
+    "EAX": 0,
+    "ECX": 1,
+    "EDX": 2,
+    "EBX": 3,
+    "ESP": 4,
+    "EBP": 5,
+    "ESI": 6,
+    "EDI": 7,
+    "REGISTERS_COUNT": 8,
+    "AL": 0,
+    "CL": 1,
+    "DL": 2,
+    "BL": 3,
+    "AH": 5,
+    "CH": 6,
+    "DH": 7,
+    "BH": 8
+};
+
 export function get_code8(emu, index) {
     return emu.memory[emu.eip + index];
 }
@@ -75,4 +95,17 @@ export function set_memory32(emu, address, value) {
     for (let i = 0; i < 4; i++) {
         set_memory8(emu, address + i, value >> (i * 8));
     }
+}
+
+export function push32(emu, value) {
+    let address = get_register32(emu, Register.ESP);
+    set_register32(emu, Register.ESP, address);
+    set_memory32(emu, address, value);
+}
+
+export function pop32(emu) {
+    let address = get_register32(emu, Register.ESP);
+    let value = get_memory32(emu, address);
+    set_register32(emu, Register.ESP, address + 4);
+    return value;
 }

@@ -1,5 +1,25 @@
-import { get_code8, set_register8, get_code32, set_register32, get_sign_code8, get_sign_code32 } from "./emulator_function.js";
+import { get_code8, set_register8, get_code32, set_register32, get_sign_code8, get_sign_code32, get_register32, push32, pop32 } from "./emulator_function.js";
 import { ModRM, parseModRM, setRm32, getR32, getRm32, setR32 } from "./modrm.js";
+
+const Register = {
+    "EAX": 0,
+    "ECX": 1,
+    "EDX": 2,
+    "EBX": 3,
+    "ESP": 4,
+    "EBP": 5,
+    "ESI": 6,
+    "EDI": 7,
+    "REGISTERS_COUNT": 8,
+    "AL": 0,
+    "CL": 1,
+    "DL": 2,
+    "BL": 3,
+    "AH": 5,
+    "CH": 6,
+    "DH": 7,
+    "BH": 8
+};
 
 let instructions = (new Array(256)).fill(0);
 
@@ -60,6 +80,13 @@ function addRm32R32(emu) {
     setRm32(emu, modrm, rm32 + r32);
 }
 
+function addRm32Imm8(emu, modrm) {
+    let rm32 = getRm32(emu, modrm);
+    let imm8 = get_sign_code32(emu, 0);
+    emu.eip += 1;
+    set_register32(emu, modrm, rm32 + imm8);
+}
+
 function subRm32Imm8(emu, modrm) {
     let rm32 = getRm32(emu, modrm);
     let imm8 = get_sign_code8(emu, 0);
@@ -73,6 +100,8 @@ function code83(emu) {
     parseModRM(emu, modrm);
 
     switch (modrm.opecode) {
+        case 0:
+            addRm32Imm8(emu, modrm);
         case 5:
             subRm32Imm8(emu, modrm);
             break;
@@ -108,7 +137,59 @@ function codeff(emu) {
     }
 }
 
+function pushR32(emu) {
+    let reg = get_code8(emu, 0) - 0x50;
+    push32(emu, get_register32(emu, reg));
+    emu.eip += 1;
+}
+
+function popR32(emu) {
+    let reg = get_code8(emu, 0) - 0x58;
+    set_register32(emu, reg, pop32(emu));
+    emu.eip += 1;
+}
+
+function pushImm32(emu) {
+    let value = get_code32(emu, 1);
+    push32(emu, value);
+    emu.eip += 5;
+}
+
+function pushImm8(emu) {
+    let value = get_code8(emu, 1);
+    push32(emu, value);
+    emu.eip += 2;
+}
+
+function callRel32(emu) {
+    let diff = get_sign_code32(emu, 1);
+    push32(emu, emu.eip + 5);
+    emu.eip += (diff + 5);
+}
+
+function ret(emu) {
+    emu.eip = pop32(emu);
+}
+
+function leave(emu) {
+    let ebp = get_register32(emu, Register.EBP);
+    set_register32(emu, Register.ESP, ebp);
+    set_register32(emu, Register.EBP, pop32(emu));
+    emu.eip += 1;
+}
+
 instructions[0x01] = addRm32R32;
+
+for (let i = 0; i < 8; i++) {
+    instructions[0x50 + i] = pushR32;
+}
+for (let i = 0; i < 8; i++) {
+    instructions[0x58 + i] = popR32;
+}
+
+instructions[0x68] = pushImm32;
+instructions[0x6A] = pushImm8;
+
 instructions[0x83] = code83;
 instructions[0x89] = movRm32R32;
 instructions[0x8B] = movR32Rm32;
@@ -120,9 +201,13 @@ for (let i = 0; i < 8; i++) {
     instructions[0xB8 + i] = movR32Imm32;
 }
 
+instructions[0xC3] = ret;
+instructions[0xC7] = movRm32Imm32;
+instructions[0xC9] = leave;
+
+instructions[0xE8] = callRel32;
 instructions[0xE9] = nearJump;
 instructions[0xEB] = shortJump;
-instructions[0xC7] = movRm32Imm32;
 instructions[0xFF] = codeff;
 
 export default instructions;
