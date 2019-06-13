@@ -1,5 +1,5 @@
 import { get_code8, set_register8, get_code32, set_register32, get_sign_code8, get_sign_code32 } from "./emulator_function.js";
-import { ModRM, parseModRM, setRm32, getR32, getRm32 } from "./modrm.js";
+import { ModRM, parseModRM, setRm32, getR32, getRm32, setR32 } from "./modrm.js";
 
 let instructions = (new Array(256)).fill(0);
 
@@ -14,6 +14,14 @@ function movR32Imm32(emu) {
     let value = get_code32(emu, 1);
     set_register32(emu, reg, value);
     emu.eip += 5;
+}
+
+function movR32Rm32(emu) {
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
+    let rm32 = getRm32(emu, modrm);
+    setR32(emu, modrm, rm32);
 }
 
 function movRm32Imm32(emu) {
@@ -103,6 +111,7 @@ function codeff(emu) {
 instructions[0x01] = addRm32R32;
 instructions[0x83] = code83;
 instructions[0x89] = movRm32R32;
+instructions[0x8B] = movR32Rm32;
 
 for (let i = 0; i < 8; i++) {
     instructions[0xB0 + i] = movR8Imm8;

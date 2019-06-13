@@ -1,4 +1,4 @@
-import { get_code8, get_code32, set_register32, get_register32 } from "./emulator_function.js";
+import { get_code8, get_code32, set_register32, get_register32, get_memory32, set_memory32 } from "./emulator_function.js";
 
 export class ModRM {
     constructor() {
@@ -69,16 +69,16 @@ export function setRm32(emu, modrm, value) {
     if (modrm.mod == 3) {
         set_register32(emu, modrm.rm, value);
     } else {
-        address = calcMemoryAddress(emu, modrm);
+        let address = calcMemoryAddress(emu, modrm);
         set_memory32(emu, address, value);
     }
 }
 
 export function getRm32(emu, modrm) {
     if (modrm.mod == 3) {
-        get_register32(emu, modrm.rm, value);
+        return get_register32(emu, modrm.rm);
     } else {
-        address = calcMemoryAddress(emu, modrm);
+        let address = calcMemoryAddress(emu, modrm);
         return get_memory32(emu, address);
     }
 }
