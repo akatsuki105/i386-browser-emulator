@@ -31,7 +31,7 @@ class Emulator {
     constructor(eip, esp) {
         this.registers = [0, 0, 0, 0, 0, 0, 0, 0];
         this.eflags = 0;
-        this.memory = (new Array(MEMOEY_SIZE)).fill(null);
+        this.memory = (new Array(MEMOEY_SIZE)).fill(0);
         this.eip = eip;
         this.registers[Register.ESP] = esp;
     }
@@ -75,14 +75,13 @@ function mainFunc() {
         let code = get_code8(emu, 0);
         
         if (instructions[code] == null) {
-            console.log("emu: ", emu);
             console.log(`Not Implemented: ${code}`);
             break;
         }
 
         instructions[code](emu);
 
-        if (emu.eip == null) {
+        if (emu.eip == 0x00) {
             console.log("end of program.");
             break;
         }

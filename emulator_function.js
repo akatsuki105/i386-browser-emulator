@@ -2,6 +2,12 @@ export function get_code8(emu, index) {
     return emu.memory[emu.eip + index];
 }
 
+export function get_sign_code8(emu, index) {
+    let unsign_code8 = emu.memory[emu.eip + index];
+    let sign_code8 = -(((~unsign_code8) + 1) & 0x00ff);
+    return sign_code8;
+}
+
 export function get_code32(emu, index) {
     let code32 = 0;
 
@@ -9,6 +15,12 @@ export function get_code32(emu, index) {
         code32 |= get_code8(emu, index + i) << (i * 8);
     }
     return code32;
+}
+
+export function get_sign_code32(emu, index) {
+    let unsign_code32 = get_code32(emu, index);
+    let sign_code32 = -(((~unsign_code32) + 1) & 0xffffffff);
+    return sign_code32;
 }
 
 export function get_register8(emu, index) {

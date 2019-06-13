@@ -1,4 +1,4 @@
-import { get_code8, set_register8, get_code32, set_register32 } from "./emulator_function.js";
+import { get_code8, set_register8, get_code32, set_register32, get_sign_code8 } from "./emulator_function.js";
 
 let instructions = (new Array(256)).fill(0);
 
@@ -16,7 +16,7 @@ function movR32Imm32(emu) {
 }
 
 function shortJump(emu) {
-    let diff = get_code8(emu, 1);
+    let diff = get_sign_code8(emu, 1);
     emu.eip += (diff + 2); // 2 = JMP + address
 }
 
