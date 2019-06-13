@@ -1,4 +1,5 @@
 import { get_code8 } from "./emulator_function.js";
+import instructions from "./instruction.js";
 
 const MEMOEY_SIZE = 1024 * 1024;
 
@@ -72,8 +73,18 @@ function mainFunc() {
     readBinary(emu, memory);
     while(emu.eip < 0x7cff) {
         let code = get_code8(emu, 0);
-        emu.eip++;
-        console.log(code);
+        
+        if (instructions[code] == null) {
+            console.log(`Not Implemented: ${code}`);
+            break;
+        }
+
+        instructions[code](emu);
+
+        if (emu.eip == 0) {
+            console.log("end of program.");
+            break;
+        }
     }
 }
 
