@@ -74,6 +74,7 @@ function mainFunc() {
     readBinary(emu, memory);
     while(emu.eip < MEMOEY_SIZE) {
         let code = get_code8(emu, 0);
+        console.log("opcode: ", (code).toString(16));
         
         if (instructions[code] == null) {
             console.log(`Not Implemented: ${code}`);

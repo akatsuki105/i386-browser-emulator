@@ -1,4 +1,4 @@
-import { get_code8, get_code32, set_register32, get_register32, get_memory32, set_memory32 } from "./emulator_function.js";
+import { get_code8, get_sign_code8, get_sign_code32, set_register32, get_register32, get_memory32, set_memory32 } from "./emulator_function.js";
 
 export class ModRM {
     constructor() {
@@ -31,10 +31,10 @@ export function parseModRM(emu, modrm) {
 
     // dispビットを参照する必要があるとき
     if ((modrm.mod == 0 && modrm.rm == 5) || modrm.mod == 2) {
-        modrm.disp32 = get_code32(emu, 0);
+        modrm.disp32 = get_sign_code32(emu, 0);
         emu.eip += 4;
     } else if (modrm.mod == 1) {
-        modrm.disp8 = get_code8(emu, 0);
+        modrm.disp8 = get_sign_code8(emu, 0);
         emu.eip += 1;
     }
 }

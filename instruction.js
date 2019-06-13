@@ -37,8 +37,8 @@ function movRm32R32(emu) {
     emu.eip += 1;
     let modrm = new ModRM();
     parseModRM(emu, modrm);
-    let rm32 = getRm32(emu, modrm);
-    setRm32(emu, modrm, rm32);
+    let r32 = getR32(emu, modrm);
+    setRm32(emu, modrm, r32);
 }
 
 function shortJump(emu) {
