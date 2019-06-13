@@ -3,125 +3,17 @@
 
 <head>
     <meta charset="UTF-8">
-    <script>
-
-        function onDragOver(event) {
-            event.preventDefault();
-        }
-
-        function onDrop(event) {
-            onAddFile(event);
-            event.preventDefault();
-        }
-
-        function htmlspecialchars(str) {
-            return (str + '').replace(/&/g, '&amp;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;');
-        }
-
-        function IntToHex(value, digits) {
-            var result = value.toString(16).toUpperCase();
-            var len = result.length;
-
-            for (var i = len; i < digits; i++) {
-                result = '0' + result;
-            }
-
-            return '0x' + result;
-        }
-
-        function setComma(S) {
-            var result = '';
-            var cnt = 0;
-
-            S = S + '';
-            for (var i = S.length - 1; i >= 0; i--) {
-                if (cnt == 3) {
-                    result = S[i] + ',' + result;
-                    cnt = 1;
-                } else {
-                    result = S[i] + result;
-                    cnt++;
-                }
-            }
-            return result;
-        }
-
-        function onAddFile(event) {
-            var files;
-            var reader = new FileReader();
-
-            if (event.target.files) {
-                files = event.target.files;
-            } else {
-                files = event.dataTransfer.files;
-            }
-
-            reader.onload = function (event) {
-                var raw = new Uint8Array(reader.result);
-                console.log("raw: ", raw);
-
-                var Ascii = '';
-                var P = '0000 ';
-                var row = 1; // 行
-                var column = 0; // 列
-
-                // 最大10kbまで
-                for (var i = 0; i < 10000; i++) {
-                    if (i >= raw.length) break;
-
-                    if (column === 16) {
-                        P += '  ' + Ascii + '\r\n';
-                        P += IntToHex((row * 16), 4).replace('0x', '') + ' ';
-                        row++;
-                        column = 0;
-                        Ascii = '';
-                    }
-
-                    P += ' ' + IntToHex(Number(raw[i]), 2).replace('0x', '');
-                    if (raw[i] >= 32 && raw[i] <= 126) {
-                        Ascii += String.fromCharCode(raw[i]);
-                    } else {
-                        Ascii += ' ';
-                    }
-
-                    column++;
-                }
-
-                // 端数
-                if (Ascii !== '') {
-                    var len = 16 - Ascii.length;
-                    for (var i = 0; i < len; i++) {
-                        Ascii = '   ' + Ascii;
-                    }
-                    P += '  ' + Ascii;
-                }
-
-                document.getElementById('BainryInfo').innerHTML =
-                    'This File Size : ' + setComma(raw.length) + ' Byte<br>Maximum displaye Size : 10KB(10,000 Byte)';
-                document.getElementById('BainryView').innerHTML = htmlspecialchars(P);
-            };
-
-
-            if (files[0]) {
-                reader.readAsArrayBuffer(files[0]);
-                document.getElementById("inputfile").value = '';
-            }
-        }        
-    </script>
+    <script src="index.js"></script>
 </head>
 
 <body>
-    <div style="height:500px;width:500px;" ondrop="onDrop(event);" ondragover="onDragOver(event);">
+    <div style="height:500px;width:500px;">
         <input type="file" id="inputfile" onchange="onAddFile(event);">
         <p id="BainryInfo"></p>
         <textarea rows="30" cols="80" id="BainryView"
             style="width:600px;font-family: Consolas, 'Courier New', Courier, Monaco, monospace;font-size:14px;"
             readonly>
-  </textarea>
+        </textarea>
     </div>
 </body>
 
