@@ -48,3 +48,25 @@ export function set_register8(emu, index, value) {
 export function set_register32(emu, index, value) {
     emu.registers[index] = value;
 }
+
+export function get_memory8(emu, address) {
+    return emu.memory[address];
+}
+
+export function get_memory32(emu, address) {
+    let memory32 = 0;
+    for (let i = 0; i < 4; i++) {
+        memory32 |= get_memory8(emu, address + i) << (i * 8);
+    }
+    return memory32;
+}
+
+export function set_memory8(emu, address, value) {
+    emu.memory[address] = value & 0xff;
+}
+
+export function set_memory32(emu, address, value) {
+    for (let i = 0; i < 4; i++) {
+        set_memory8(emu, address + i, value >> (i * 8));
+    }
+}

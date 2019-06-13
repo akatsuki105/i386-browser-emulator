@@ -82,7 +82,8 @@ function mainFunc() {
         instructions[code](emu);
 
         if (emu.eip == 0x00) {
-            console.log("end of program.");
+            console.log(`end of program. `);
+            console.log("emu: ", emu);
             break;
         }
     }
