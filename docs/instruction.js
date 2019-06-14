@@ -208,6 +208,16 @@ function leave(emu) {
     emu.eip += 1;
 }
 
+function negRm8(emu) {
+    let value = getRm8(emu, modrm);
+    setRm8(emu, modrm, -value);
+}
+
+function negRm32(emu) {
+    let value = getRm32(emu, modrm);
+    setRm32(emu, modrm, -value);
+}
+
 function cmpR32Rm32(emu) {
     emu.eip += 1;
     let modrm = new ModRM();
@@ -347,6 +357,8 @@ instructions[0xE8] = callRel32;
 instructions[0xE9] = nearJump;
 instructions[0xEB] = shortJump;
 instructions[0xEC] = in_al_dx;
+instructions[0xF6] = negRm8;
+instructions[0xF7] = negRm32;
 instructions[0xEE] = out_dx_al;
 instructions[0xFF] = codeff;
 
