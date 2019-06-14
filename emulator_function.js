@@ -63,10 +63,10 @@ export function get_register32(emu, index) {
 
 export function set_register8(emu, index, value) {
     if (index < 4) {
-        r = emu.registers[index] & 0xffffff00;
+        let r = emu.registers[index] & 0xffffff00;
         emu.registers[index] = r | value;
     } else {
-        r = emu.registers[index -4] & 0xffff00ff;
+        let r = emu.registers[index -4] & 0xffff00ff;
         emu.registers[index-4] = r | (value << 8);
     }
 }

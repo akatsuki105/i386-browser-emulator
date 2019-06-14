@@ -1,5 +1,6 @@
-import { get_code8, set_register8, get_code32, set_register32, get_sign_code8, get_sign_code32, get_register32, push32, pop32, update_eflags_sub, is_sign, is_carry, is_overflow } from "./emulator_function.js";
-import { ModRM, parseModRM, setRm32, getR32, getRm32, setR32 } from "./modrm.js";
+import { get_code8, set_register8, get_code32, set_register32, get_sign_code8, get_sign_code32, get_register32, push32, pop32, update_eflags_sub, is_sign, is_carry, is_overflow, get_register8, is_zero } from "./emulator_function.js";
+import { ModRM, parseModRM, setRm32, getR32, getRm32, setR32, getR8, setRm8, setR8, getRm8 } from "./modrm.js";
+import { io_in8, io_out8 } from "./io.js";
 
 const Register = {
     "EAX": 0,
@@ -34,6 +35,15 @@ function movR32Imm32(emu) {
     let value = get_code32(emu, 1);
     set_register32(emu, reg, value);
     emu.eip += 5;
+}
+
+function movR8Rm8(emu)
+{
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
+    let rm8 = getRm8(emu, modrm);
+    setR8(emu, modrm, rm8);
 }
 
 function movR32Rm32(emu) {
@@ -71,6 +81,14 @@ function nearJump(emu) {
     emu.eip += (diff + 5);
 }
 
+function cmp_al_imm8(emu) {
+    let value = get_code8(emu, 1);
+    let al = get_register8(emu, Register.AL);
+    let result = al - value;
+    update_eflags_sub(emu, al, value, result);
+    emu.eip += 2;
+}
+
 function addRm32R32(emu) {
     emu.eip += 1;
     let modrm = new ModRM();
@@ -85,6 +103,14 @@ function addRm32Imm8(emu, modrm) {
     let imm8 = get_sign_code32(emu, 0);
     emu.eip += 1;
     set_register32(emu, modrm, rm32 + imm8);
+}
+
+function movRm8R8(emu) {
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
+    let r8 = getR8(emu, modrm);
+    setRm8(emu, modrm, r8);
 }
 
 function subRm32Imm8(emu, modrm) {
@@ -200,6 +226,12 @@ function cmpRm32Imm8(emu, modrm) {
     update_eflags_sub(emu, rm32, imm8, result);
 }
 
+function incR32(emu) {
+    let reg = get_code8(emu, 0) - 0x40;
+    set_register32(emu, reg, get_register32(emu, reg) + 1);
+    emu.eip += 1;
+}
+
 function jc(emu) {
     let diff = is_carry(emu) ? get_sign_code8(emu, 1) : 0;
     emu.eip += (diff + 2);
@@ -250,7 +282,28 @@ function jle(emu) {
     emu.eip += (diff + 2);
 }
 
+function in_al_dx(emu) {
+    let address = get_register32(emu, Register.EDX) & 0xffff;
+    let value = io_in8(address);
+    set_register8(emu, Register.AL, value);
+    emu.eip += 1;
+}
+
+function out_dx_al(emu) {
+    let address = get_register32(emu, Register.EDX) & 0xffff;
+    let value = get_register8(emu, Register.AL);
+    io_out8(address, value);
+    emu.eip += 1;
+}
+
 instructions[0x01] = addRm32R32;
+
+instructions[0x3B] = cmpR32Rm32;
+instructions[0x3C] = cmp_al_imm8;
+
+for (let i = 0; i < 8; i++) {
+    instructions[0x40 + i] = incR32;
+}
 
 for (let i = 0; i < 8; i++) {
     instructions[0x50 + i] = pushR32;
@@ -274,7 +327,9 @@ instructions[0x7C] = jl;
 instructions[0x7E] = jle;
 
 instructions[0x83] = code83;
+instructions[0x88] = movRm8R8;
 instructions[0x89] = movRm32R32;
+instructions[0x8A] = movR8Rm8;
 instructions[0x8B] = movR32Rm32;
 
 for (let i = 0; i < 8; i++) {
@@ -291,6 +346,8 @@ instructions[0xC9] = leave;
 instructions[0xE8] = callRel32;
 instructions[0xE9] = nearJump;
 instructions[0xEB] = shortJump;
+instructions[0xEC] = in_al_dx;
+instructions[0xEE] = out_dx_al;
 instructions[0xFF] = codeff;
 
 export default instructions;

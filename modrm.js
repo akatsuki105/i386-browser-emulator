@@ -1,4 +1,4 @@
-import { get_code8, get_sign_code8, get_sign_code32, set_register32, get_register32, get_memory32, set_memory32 } from "./emulator_function.js";
+import { get_code8, get_sign_code8, get_sign_code32, set_register32, get_register32, get_memory32, set_memory32, get_register8, set_register8, get_memory8 } from "./emulator_function.js";
 
 export class ModRM {
     constructor() {
@@ -63,7 +63,17 @@ export function calcMemoryAddress(emu, modrm) {
     } else {
         throw new Error("not implemented ModRM mod = 3");
     }
-} 
+}
+
+export function setRm8(emu, modrm, value)
+{
+    if (modrm.mod == 3) {
+        set_register8(emu, modrm.rm, value);
+    } else {
+        let address = calc_memory_address(emu, modrm);
+        set_memory8(emu, address, value);
+    }
+}
 
 export function setRm32(emu, modrm, value) {
     if (modrm.mod == 3) {
@@ -74,6 +84,16 @@ export function setRm32(emu, modrm, value) {
     }
 }
 
+export function getRm8(emu, modrm)
+{
+    if (modrm.mod == 3) {
+        return get_register8(emu, modrm.rm);
+    } else {
+        let address = calcMemoryAddress(emu, modrm);
+        return get_memory8(emu, address);
+    }
+}
+
 export function getRm32(emu, modrm) {
     if (modrm.mod == 3) {
         return get_register32(emu, modrm.rm);
@@ -81,6 +101,14 @@ export function getRm32(emu, modrm) {
         let address = calcMemoryAddress(emu, modrm);
         return get_memory32(emu, address);
     }
+}
+
+export function setR8(emu, modrm, value) {
+    set_register8(emu, modrm.opecode, value);
+}
+
+export function getR8(emu, modrm) {
+    return get_register8(emu, modrm.opecode);
 }
 
 export function setR32(emu, modrm, value) {
