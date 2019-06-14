@@ -69,12 +69,23 @@ function readBinary(emu, memory) {
     }
 }
 
+function writeEmu(code, emu) {
+    document.getElementById('result').append(`\ropcode: ${code}\n`);
+    document.getElementById('result').append(`EAX: ${(emu.registers[Register.EAX]).toString(16)}\n`);
+    document.getElementById('result').append(`ECX: ${(emu.registers[Register.ECX]).toString(16)}\n`);
+    document.getElementById('result').append(`EDX: ${(emu.registers[Register.EDX]).toString(16)}\n`);
+    document.getElementById('result').append(`EBX: ${(emu.registers[Register.EBX]).toString(16)}\n`);
+    document.getElementById('result').append(`ESP: ${(emu.registers[Register.ESP]).toString(16)}\n`);
+    document.getElementById('result').append(`EBP: ${(emu.registers[Register.EBP]).toString(16)}\n`);
+    document.getElementById('result').append(`ESI: ${(emu.registers[Register.ESI]).toString(16)}\n`);
+    document.getElementById('result').append(`EDI: ${(emu.registers[Register.EDI]).toString(16)}\n`);
+}
+
 function mainFunc() {
     let emu = new Emulator(0x7c00, 0x7c00);
     readBinary(emu, memory);
     while(emu.eip < MEMOEY_SIZE) {
         let code = get_code8(emu, 0);
-        console.log("opcode: ", (code).toString(16));
         
         if (instructions[code] == null) {
             console.log(`Not Implemented: ${code}`);
@@ -82,6 +93,7 @@ function mainFunc() {
         }
 
         instructions[code](emu);
+        writeEmu(`0x${(code).toString(16)}`, emu);
 
         if (emu.eip == 0x00) {
             console.log(`end of program. `);

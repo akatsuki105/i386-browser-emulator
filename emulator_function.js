@@ -98,7 +98,7 @@ export function set_memory32(emu, address, value) {
 }
 
 export function push32(emu, value) {
-    let address = get_register32(emu, Register.ESP);
+    let address = get_register32(emu, Register.ESP) - 4;
     set_register32(emu, Register.ESP, address);
     set_memory32(emu, address, value);
 }
