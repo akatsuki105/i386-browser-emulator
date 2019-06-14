@@ -69,8 +69,7 @@ function readBinary(emu, memory) {
     }
 }
 
-function writeEmu(code, emu) {
-    document.getElementById('consoleOutput').append(`\ropcode: ${code}\n`);
+function writeEmu(emu) {
     document.getElementById('consoleOutput').append(`EAX: ${(emu.registers[Register.EAX]).toString(16)}\n`);
     document.getElementById('consoleOutput').append(`ECX: ${(emu.registers[Register.ECX]).toString(16)}\n`);
     document.getElementById('consoleOutput').append(`EDX: ${(emu.registers[Register.EDX]).toString(16)}\n`);
@@ -93,8 +92,14 @@ function mainFunc() {
             break;
         }
 
-        instructions[code](emu);
-        writeEmu(`0x${(code).toString(16)}`, emu);
+        try {
+            instructions[code](emu);
+            outputText(`opcode: 0x${(code).toString(16)}`);
+            writeEmu(emu);
+        } catch (e) {
+            outputText(`Not Implemented: 0x${(code).toString(16)}`);
+            throw new Error(e);
+        }
 
         if (emu.eip == 0x00) {
             outputText(`end of program. `);
