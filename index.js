@@ -34,7 +34,6 @@ class Emulator {
         this.memory = (new Array(MEMOEY_SIZE)).fill(0);
         this.eip = eip;
         this.registers[Register.ESP] = esp;
-        console.log("this.register: ", this.registers);
     }
 }
 
