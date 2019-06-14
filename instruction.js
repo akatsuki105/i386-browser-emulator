@@ -1,4 +1,4 @@
-import { get_code8, set_register8, get_code32, set_register32, get_sign_code8, get_sign_code32, get_register32, push32, pop32 } from "./emulator_function.js";
+import { get_code8, set_register8, get_code32, set_register32, get_sign_code8, get_sign_code32, get_register32, push32, pop32, update_eflags_sub, is_sign, is_carry, is_overflow } from "./emulator_function.js";
 import { ModRM, parseModRM, setRm32, getR32, getRm32, setR32 } from "./modrm.js";
 
 const Register = {
@@ -91,7 +91,9 @@ function subRm32Imm8(emu, modrm) {
     let rm32 = getRm32(emu, modrm);
     let imm8 = get_sign_code8(emu, 0);
     emu.eip += 1;
+    let result = rm32 - imm8;
     setRm32(emu, modrm, rm32 - imm8);
+    update_eflags_sub(emu, rm32, imm8, result);
 }
 
 function code83(emu) {
@@ -105,6 +107,8 @@ function code83(emu) {
         case 5:
             subRm32Imm8(emu, modrm);
             break;
+        case 7: 
+            cmpRm32Imm8(emu, modrm);
         default:
             throw new Error(`not implemented 83 ${modrm.opecode}`);
     }
@@ -178,6 +182,74 @@ function leave(emu) {
     emu.eip += 1;
 }
 
+function cmpR32Rm32(emu) {
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
+    let r32 = getR32(emu, modrm);
+    let rm32 = getRm32(emu, modrm);
+    let result = r32 - rm32;
+    update_eflags_sub(emu, r32, rm32, result);
+}
+
+function cmpRm32Imm8(emu, modrm) {
+    let rm32 = getRm32(emu, modrm);
+    let imm8 = get_sign_code8(emu, 0);
+    emu.eip += 1;
+    let result = rm32 - imm8;
+    update_eflags_sub(emu, rm32, imm8, result);
+}
+
+function jc(emu) {
+    let diff = is_carry(emu) ? get_sign_code8(emu, 1) : 0;
+    emu.eip += (diff + 2);
+}
+
+function jnc(emu) {
+    let diff = is_carry(emu) ? 0 : get_sign_code8(emu, 1);
+    emu.eip += (diff + 2);
+}
+
+function jz(emu) {
+    let diff = is_zero(emu) ? get_sign_code8(emu, 1) : 0;
+    emu.eip += (diff + 2);
+}
+
+function jnz(emu) {
+    let diff = is_zero(emu) ? 0 : get_sign_code8(emu, 1);
+    emu.eip += (diff + 2);
+}
+
+function js(emu) {
+    let diff = is_sign(emu) ? get_sign_code8(emu, 1) : 0;
+    emu.eip += (diff + 2);
+}
+
+function jns(emu) {
+    let diff = is_sign(emu) ? 0 : get_sign_code8(emu, 1);
+    emu.eip += (diff + 2);
+}
+
+function jo(emu) {
+    let diff = is_overflow(emu) ? get_sign_code8(emu, 1) : 0;
+    emu.eip += (diff + 2);
+}
+
+function jno(emu) {
+    let diff = is_overflow(emu) ? 0 : get_sign_code8(emu, 1);
+    emu.eip += (diff + 2);
+}
+
+function jl(emu) {
+    let diff = (is_sign(emu) != is_overflow(emu)) ? get_sign_code8(emu, 1) : 0;
+    emu.eip += (diff + 2);
+}
+
+function jle(emu) {
+    let diff = ((is_zero(emu)) || (is_sign(emu) != is_overflow(emu))) ? get_sign_code8(emu, 1) : 0;
+    emu.eip += (diff + 2);
+}
+
 instructions[0x01] = addRm32R32;
 
 for (let i = 0; i < 8; i++) {
@@ -189,6 +261,17 @@ for (let i = 0; i < 8; i++) {
 
 instructions[0x68] = pushImm32;
 instructions[0x6A] = pushImm8;
+
+instructions[0x70] = jo;
+instructions[0x71] = jno;
+instructions[0x72] = jc;
+instructions[0x73] = jnc;
+instructions[0x74] = jz;
+instructions[0x75] = jnz;
+instructions[0x78] = js;
+instructions[0x79] = jns;
+instructions[0x7C] = jl;
+instructions[0x7E] = jle;
 
 instructions[0x83] = code83;
 instructions[0x89] = movRm32R32;

@@ -109,3 +109,68 @@ export function pop32(emu) {
     set_register32(emu, Register.ESP, address + 4);
     return value;
 }
+
+const CARRY_FLAG = 1;
+const ZERO_FLAG = (1 << 6);
+const SIGN_FLAG = (1 << 7);
+const OVERFLOW_FLAG = (1 << 11);
+
+export function set_carry(emu, isCarry) {
+    if (isCarry) {
+        emu.eflags |= CARRY_FLAG;
+    } else {
+        emu.eflags &= ~CARRY_FLAG;
+    }
+}
+
+export function set_zero(emu, isZero) {
+    if (isZero) {
+        emu.eflags |= ZERO_FLAG;
+    } else {
+        emu.eflags &= ~ZERO_FLAG;
+    }
+}
+
+export function set_sign(emu, isSign) {
+    if (isSign) {
+        emu.eflags |= SIGN_FLAG;
+    } else {
+        emu.eflags &= ~SIGN_FLAG;
+    }
+}
+
+export function set_overflow(emu, isOverflow) {
+    if (isOverflow) {
+        emu.eflags |= OVERFLOW_FLAG;
+    } else {
+        emu.eflags &= ~OVERFLOW_FLAG;
+    }
+}
+
+export function is_carry(emu) {
+    return (emu.eflags & CARRY_FLAG) !== 0;
+}
+
+export function is_zero(emu) {
+    return (emu.eflags & ZERO_FLAG) !== 0;
+}
+
+export function is_sign(emu) {
+    return (emu.eflags & SIGN_FLAG) !== 0;
+}
+
+export function is_overflow(emu) {
+    return (emu.eflags & OVERFLOW_FLAG) !== 0;
+}
+
+export function update_eflags_sub(emu, v1, v2, result) {
+    let sign1 = v1 >> 31;
+    let sign2 = v2 >> 31;
+    let signr = (result >> 31) & 1; // resultの31bitのみ
+
+    // 各命令を実装する
+    set_carry(emu, result >> 32);
+    set_zero(emu, result === 0);
+    set_sign(emu, signr);
+    set_overflow(emu, ((sign1 != sign2) && (sign1 != signr)));
+}
