@@ -1,5 +1,6 @@
 import { get_code8 } from "./emulator_function.js";
 import instructions from "./instruction.js";
+import { outputText, resetTextBox } from "./io.js";
 
 const MEMOEY_SIZE = 1024 * 1024;
 
@@ -69,29 +70,26 @@ function readBinary(emu, memory) {
 }
 
 function writeEmu(code, emu) {
-    document.getElementById('result').append(`\ropcode: ${code}\n`);
-    document.getElementById('result').append(`EAX: ${(emu.registers[Register.EAX]).toString(16)}\n`);
-    document.getElementById('result').append(`ECX: ${(emu.registers[Register.ECX]).toString(16)}\n`);
-    document.getElementById('result').append(`EDX: ${(emu.registers[Register.EDX]).toString(16)}\n`);
-    document.getElementById('result').append(`EBX: ${(emu.registers[Register.EBX]).toString(16)}\n`);
-    document.getElementById('result').append(`ESP: ${(emu.registers[Register.ESP]).toString(16)}\n`);
-    document.getElementById('result').append(`EBP: ${(emu.registers[Register.EBP]).toString(16)}\n`);
-    document.getElementById('result').append(`ESI: ${(emu.registers[Register.ESI]).toString(16)}\n`);
-    document.getElementById('result').append(`EDI: ${(emu.registers[Register.EDI]).toString(16)}\n`);
-}
-
-function wirteMsg(msg) {
-    document.getElementById('result').append(`\n${msg}\n`);
+    document.getElementById('consoleOutput').append(`\ropcode: ${code}\n`);
+    document.getElementById('consoleOutput').append(`EAX: ${(emu.registers[Register.EAX]).toString(16)}\n`);
+    document.getElementById('consoleOutput').append(`ECX: ${(emu.registers[Register.ECX]).toString(16)}\n`);
+    document.getElementById('consoleOutput').append(`EDX: ${(emu.registers[Register.EDX]).toString(16)}\n`);
+    document.getElementById('consoleOutput').append(`EBX: ${(emu.registers[Register.EBX]).toString(16)}\n`);
+    document.getElementById('consoleOutput').append(`ESP: ${(emu.registers[Register.ESP]).toString(16)}\n`);
+    document.getElementById('consoleOutput').append(`EBP: ${(emu.registers[Register.EBP]).toString(16)}\n`);
+    document.getElementById('consoleOutput').append(`ESI: ${(emu.registers[Register.ESI]).toString(16)}\n`);
+    document.getElementById('consoleOutput').append(`EDI: ${(emu.registers[Register.EDI]).toString(16)}\n`);
 }
 
 function mainFunc() {
     let emu = new Emulator(0x7c00, 0x7c00);
+    resetTextBox();
     readBinary(emu, memory);
     while(emu.eip < MEMOEY_SIZE) {
         let code = get_code8(emu, 0);
         
         if (instructions[code] == null) {
-            wirteMsg(`Not Implemented: ${code}`);
+            outputText(`Not Implemented: ${code}`);
             break;
         }
 
@@ -99,7 +97,7 @@ function mainFunc() {
         writeEmu(`0x${(code).toString(16)}`, emu);
 
         if (emu.eip == 0x00) {
-            wirteMsg(`end of program. `);
+            outputText(`end of program. `);
             break;
         }
     }
