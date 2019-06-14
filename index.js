@@ -81,6 +81,10 @@ function writeEmu(code, emu) {
     document.getElementById('result').append(`EDI: ${(emu.registers[Register.EDI]).toString(16)}\n`);
 }
 
+function wirteMsg(msg) {
+    document.getElementById('result').append(`\n${msg}\n`);
+}
+
 function mainFunc() {
     let emu = new Emulator(0x7c00, 0x7c00);
     readBinary(emu, memory);
@@ -88,7 +92,7 @@ function mainFunc() {
         let code = get_code8(emu, 0);
         
         if (instructions[code] == null) {
-            console.log(`Not Implemented: ${code}`);
+            wirteMsg(`Not Implemented: ${code}`);
             break;
         }
 
@@ -96,8 +100,7 @@ function mainFunc() {
         writeEmu(`0x${(code).toString(16)}`, emu);
 
         if (emu.eip == 0x00) {
-            console.log(`end of program. `);
-            console.log("emu: ", emu);
+            wirteMsg(`end of program. `);
             break;
         }
     }
