@@ -208,22 +208,6 @@ function leave(emu) {
     emu.eip += 1;
 }
 
-function negRm8(emu) {
-    emu.eip += 1;
-    let modrm = new ModRM();
-    parseModRM(emu, modrm);
-    let value = getRm8(emu, modrm);
-    setRm8(emu, modrm, -value);
-}
-
-function negRm32(emu) {
-    emu.eip += 1;
-    let modrm = new ModRM();
-    parseModRM(emu, modrm);
-    let value = getRm32(emu, modrm);
-    setRm32(emu, modrm, -value);
-}
-
 function cmpR32Rm32(emu) {
     emu.eip += 1;
     let modrm = new ModRM();
@@ -240,6 +224,60 @@ function cmpRm32Imm8(emu, modrm) {
     emu.eip += 1;
     let result = rm32 - imm8;
     update_eflags_sub(emu, rm32, imm8, result);
+}
+
+function negRm8(emu, modrm) {
+    let value = getRm8(emu, modrm);
+    setRm8(emu, modrm, -value);
+}
+
+function mulRm8(emu, modrm) {
+    let rm8 = getRm8(emu, modrm);
+    set_register8(emu, Register.AL, rm8 * get_register8(emu, Register.AL));
+}
+
+function codef6(emu) {
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
+
+    switch (modrm.opecode) {
+        case 3:
+            negRm8(emu, modrm);
+            break;
+        case 4:
+            mulRm8(emu, modrm);
+            break;
+        default:
+            throw new Error(`not implemented F6 ${modrm.opecode}`);
+    }
+}
+
+function negRm32(emu, modrm) {
+    let value = getRm32(emu, modrm);
+    setRm32(emu, modrm, -value);
+}
+
+function mulRm32(emu, modrm) {
+    let rm32 = getRm32(emu, modrm);
+    set_register32(emu, Register.EAX, rm32*get_register32(emu, Register.EAX));
+}
+
+function codef7(emu) {
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
+    
+    switch(modrm.opecode) {
+        case 3:
+            negRm32(emu, modrm);
+            break;
+        case 4:
+            mulRm32(emu, modrm);
+            break;
+        default:
+            throw new Error(`not implemented F7 ${modrm.opecode}`);
+    }
 }
 
 function incR32(emu) {
@@ -363,8 +401,8 @@ instructions[0xE8] = callRel32;
 instructions[0xE9] = nearJump;
 instructions[0xEB] = shortJump;
 instructions[0xEC] = in_al_dx;
-instructions[0xF6] = negRm8;
-instructions[0xF7] = negRm32;
+instructions[0xF6] = codef6;
+instructions[0xF7] = codef7;
 instructions[0xEE] = out_dx_al;
 instructions[0xFF] = codeff;
 
