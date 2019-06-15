@@ -208,6 +208,15 @@ function leave(emu) {
     emu.eip += 1;
 }
 
+function xorR32Rm32(emu) {
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
+    let r32 = getR32(emu, modrm);
+    let rm32 = getRm32(emu, modrm);
+    setR32(emu, modrm, r32 ^ rm32);
+}
+
 function cmpR32Rm32(emu) {
     emu.eip += 1;
     let modrm = new ModRM();
@@ -351,6 +360,8 @@ function out_dx_al(emu) {
 }
 
 instructions[0x01] = addRm32R32;
+
+instructions[0x33] = xorR32Rm32;
 
 instructions[0x3B] = cmpR32Rm32;
 instructions[0x3C] = cmp_al_imm8;
