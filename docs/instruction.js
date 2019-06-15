@@ -209,11 +209,17 @@ function leave(emu) {
 }
 
 function negRm8(emu) {
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
     let value = getRm8(emu, modrm);
     setRm8(emu, modrm, -value);
 }
 
 function negRm32(emu) {
+    emu.eip += 1;
+    let modrm = new ModRM();
+    parseModRM(emu, modrm);
     let value = getRm32(emu, modrm);
     setRm32(emu, modrm, -value);
 }
